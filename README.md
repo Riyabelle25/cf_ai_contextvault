@@ -1,6 +1,6 @@
 # ContextVault
 
-**ContextVault** is a Retrieval-Augmented Generation (RAG) application built on Cloudflare Workers, Workers AI, KV, and Durable Objects. It allows users to upload knowledge documents and chat with an AI assistant that answers questions based on the uploaded content.
+**ContextVault** is a Retrieval-Augmented Generation (RAG) application built on Cloudflare Workers, Workers AI, KV, and Durable Objects. It lets users to upload knowledge base documents and chat with an AI assistant that answers questions based on the uploaded content.
 
 ## Features
 
@@ -20,15 +20,15 @@
 └──────┬──────┘
        │
        ▼
-┌─────────────────────────────────────────┐
-│         Cloudflare Worker               │
-│  ┌──────────────────────────────────┐  │
-│  │  API Routes                      │  │
-│  │  - /api/upload                   │  │
-│  │  - /api/query                    │  │
-│  │  - /api/files                    │  │
-│  └──────────────────────────────────┘  │
-│                                         │
+┌───────────────────────────────────────┐
+│         Cloudflare Worker             │
+│  ┌──────────────────────────────────┐ │
+│  │  API Routes                      │ │
+│  │  - /api/upload                   │ │
+│  │  - /api/query                    │ │
+│  │  - /api/files                    │ │
+│  └──────────────────────────────────┘ │
+│                                       │
 │  ┌──────────┐  ┌──────────┐           │
 │  │Ingestion │  │Retrieval │  ┌─────┐  │
 │  │ Module   │  │ Module   │  │ LLM │  │
@@ -340,5 +340,5 @@ MIT
 
 ## Contributing
 
-This is a Cloudflare internship assignment project. Feel free to fork and extend!
+This is a Cloudflare internship assignment project.
 
