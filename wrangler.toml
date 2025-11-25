@@ -1,0 +1,35 @@
+name = "contextvault"
+main = "src/worker.ts"
+compatibility_date = "2024-11-27"
+compatibility_flags = ["nodejs_compat"]
+
+# Workers AI binding
+[ai]
+binding = "AI"
+
+# KV namespace for embeddings
+[[kv_namespaces]]
+binding = "KV_EMBEDDINGS"
+id = "f98a795402a44430a230819777548212"
+preview_id = "3ec572fa617047138e10cbca8c5c89e5"
+
+# Durable Objects
+[[durable_objects.bindings]]
+name = "CONVERSATION_MEMORY"
+class_name = "ConversationMemory"
+script_name = "contextvault"
+
+[[durable_objects.bindings]]
+name = "FILE_REGISTRY"
+class_name = "FileRegistry"
+script_name = "contextvault"
+
+# Durable Objects migrations (for development)
+# Using new_sqlite_classes for free plan compatibility
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ConversationMemory", "FileRegistry"]
+
+# Note: Frontend should be deployed separately to Cloudflare Pages
+# See README.md for deployment instructions
+

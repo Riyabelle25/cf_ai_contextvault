@@ -1,0 +1,28 @@
+{
+  "name": "cf_ai_contextvault",
+  "version": "1.0.0",
+  "description": "ContextVault - A Cloudflare AI RAG Application",
+  "main": "src/worker.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "ai",
+    "rag",
+    "llm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.50.0"
+  },
+  "dependencies": {}
+}
+
