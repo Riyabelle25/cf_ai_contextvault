@@ -11,7 +11,8 @@ let API_BASE_URL = window.location.origin;
 // API_BASE_URL = 'http://localhost:8787';
 
 // For production with separate worker domain, set your worker URL:
-API_BASE_URL = 'https://contextvault.riyabelle25.workers.dev';
+API_BASE_URL = 'http://localhost:8787'
+// 'https://contextvault.riyabelle25.workers.dev';
 
 // Generate a session ID for this user session
 const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -45,6 +46,12 @@ function initializeEventListeners() {
     
     // Refresh file list
     document.getElementById('refreshFilesBtn').addEventListener('click', loadFileList);
+    
+    // Cleanup orphaned chunks
+    document.getElementById('cleanupBtn').addEventListener('click', handleCleanupOrphaned);
+    
+    // Debug chunks
+    document.getElementById('debugBtn').addEventListener('click', handleDebugChunks);
 }
 
 /**
@@ -59,10 +66,24 @@ async function handleFileUpload() {
         return;
     }
     
+    // Check file type and size, show appropriate message
+    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const fileSizeMB = (file.size / 1024 / 1024).toFixed(1);
+    const isLarge = file.size > 2 * 1024 * 1024; // > 2MB
+    
+    let statusMessage = 'Uploading...';
+    if (isPDF) {
+        statusMessage = isLarge 
+            ? `Processing large PDF (${fileSizeMB}MB)... This may take up to 60 seconds.`
+            : `Processing PDF (${fileSizeMB}MB)...`;
+    } else if (isLarge) {
+        statusMessage = `Uploading large file (${fileSizeMB}MB)...`;
+    }
+    
     const formData = new FormData();
     formData.append('file', file);
     
-    showUploadStatus('Uploading...', 'info');
+    showUploadStatus(statusMessage, 'info');
     
     try {
         const response = await fetch(`${API_BASE_URL}/api/upload`, {
@@ -223,15 +244,27 @@ async function loadFileList() {
         
         if (response.ok && result.files && result.files.length > 0) {
             fileList.innerHTML = result.files.map(file => `
-                <div class="file-item p-2 rounded border border-gray-200">
-                    <div class="font-medium text-sm">${file.fileName}</div>
-                    <div class="text-xs text-gray-500">
-                        ${file.chunkCount} chunks • 
-                        ${formatDate(file.uploadedAt)} • 
-                        <span class="text-${file.status === 'completed' ? 'green' : file.status === 'processing' ? 'yellow' : 'red'}-600">
-                            ${file.status}
-                        </span>
+                <div class="file-item p-3 rounded border border-gray-200 flex justify-between items-start">
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-sm truncate">${file.fileName}</div>
+                        <div class="text-xs text-gray-500">
+                            ${file.chunkCount} chunks • 
+                            ${formatDate(file.uploadedAt)} • 
+                            <span class="text-${file.status === 'completed' ? 'green' : file.status === 'processing' ? 'yellow' : 'red'}-600">
+                                ${file.status}
+                            </span>
+                            ${file.error ? `<br><span class="text-red-500">Error: ${file.error}</span>` : ''}
+                        </div>
                     </div>
+                    <button 
+                        onclick="deleteFile('${file.fileId}', '${file.fileName}')" 
+                        class="ml-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded p-1 transition-colors"
+                        title="Delete file"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
                 </div>
             `).join('');
         } else {
@@ -323,5 +356,95 @@ function showUploadStatus(message, type) {
 function formatDate(timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+}
+
+/**
+ * Delete a file
+ */
+async function deleteFile(fileId, fileName) {
+    if (!confirm(`Are you sure you want to delete "${fileName}"? This action cannot be undone.`)) {
+        return;
+    }
+    
+    try {
+        showUploadStatus('Deleting file...', 'info');
+        
+        const response = await fetch(`${API_BASE_URL}/api/files/delete?fileId=${fileId}`, {
+            method: 'DELETE',
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showUploadStatus(`Successfully deleted "${fileName}"`, 'success');
+            loadFileList(); // Refresh the file list
+        } else {
+            showUploadStatus(`Failed to delete file: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        showUploadStatus(`Delete failed: ${error.message}`, 'error');
+        console.error('Delete error:', error);
+    }
+}
+
+/**
+ * Cleanup orphaned chunks (chunks from deleted files)
+ */
+async function handleCleanupOrphaned() {
+    if (!confirm('This will remove all data chunks from deleted files. Continue?')) {
+        return;
+    }
+    
+    try {
+        showUploadStatus('Cleaning up orphaned data...', 'info');
+        
+        const response = await fetch(`${API_BASE_URL}/api/admin/cleanup`, {
+            method: 'POST',
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showUploadStatus(
+                `Cleanup complete! ${result.orphanedChunksDeleted} orphaned chunks removed. ${result.remainingChunks} chunks remain.`, 
+                'success'
+            );
+            console.log('Cleanup result:', result);
+        } else {
+            showUploadStatus(`Cleanup failed: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        showUploadStatus(`Cleanup failed: ${error.message}`, 'error');
+        console.error('Cleanup error:', error);
+    }
+}
+
+/**
+ * Debug chunks - show what's in storage
+ */
+async function handleDebugChunks() {
+    try {
+        showUploadStatus('Getting debug info...', 'info');
+        
+        const response = await fetch(`${API_BASE_URL}/api/debug/chunks`);
+        const result = await response.json();
+        
+        if (response.ok) {
+            console.log('Debug chunks result:', result);
+            showUploadStatus(
+                `Debug info logged to console. ${result.totalChunks} total chunks found.`, 
+                'success'
+            );
+            
+            // Also show a summary in an alert for quick viewing
+            const fileIds = Object.keys(result.chunksByFile);
+            alert(`Debug Info:\n\nTotal chunks: ${result.totalChunks}\nFiles with chunks: ${fileIds.length}\n\nFile IDs with chunks:\n${fileIds.join(', ')}\n\nCheck console for detailed breakdown.`);
+        } else {
+            showUploadStatus(`Debug failed: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        showUploadStatus(`Debug failed: ${error.message}`, 'error');
+        console.error('Debug error:', error);
+    }
 }
 
