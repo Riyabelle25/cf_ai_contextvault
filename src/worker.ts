@@ -3,7 +3,7 @@
  * Routes requests to appropriate handlers
  */
 
-import { handleUpload } from "./ingestion";
+import { handleUpload, handleDeleteFile, handleDebugChunks, handleCleanupOrphanedChunks } from "./ingestion";
 import { retrieveChunks, formatChunksAsContext } from "./retrieval";
 import { queryLLM } from "./llm";
 import { ConversationMemory } from "./do/ConversationMemory";
@@ -95,6 +95,24 @@ async function handleAPIRequest(
       const response = await handleGetFile(fileId, env);
       return addCorsHeaders(response, corsHeaders);
     }
+  }
+
+  // Delete file endpoint
+  if (path === "/api/files/delete" && request.method === "DELETE") {
+    const response = await handleDeleteFile(request, env);
+    return addCorsHeaders(response, corsHeaders);
+  }
+
+  // Debug endpoint to list all chunks (for debugging)
+  if (path === "/api/debug/chunks" && request.method === "GET") {
+    const response = await handleDebugChunks(env);
+    return addCorsHeaders(response, corsHeaders);
+  }
+
+  // Admin endpoint to cleanup orphaned chunks
+  if (path === "/api/admin/cleanup" && request.method === "POST") {
+    const response = await handleCleanupOrphanedChunks(env);
+    return addCorsHeaders(response, corsHeaders);
   }
 
   // Clear conversation endpoint
