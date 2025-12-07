@@ -11,6 +11,9 @@
 - 📚 **File Registry**: Tracks all uploaded files and their processing status
 - 🎨 **Modern UI**: Clean, responsive interface built with Tailwind CSS
 
+## Demo
+<img width="1234" height="820" alt="image" src="https://github.com/user-attachments/assets/2a9c7657-2d90-41f2-85b9-40e8ccee7b75" />
+
 ## Architecture
 
 ```
