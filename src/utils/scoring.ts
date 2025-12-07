@@ -1,6 +1,15 @@
 /**
- * Similarity scoring utilities for vector search
- */
+ * Similarity scoring utilities for vector s  for (const chunk of chunks) {
+    const score = cosineSimilarity(queryEmbedding, chunk.embedding);
+    // Ensure score is a valid number
+    const validScore = (typeof score === 'number' && !isNaN(score)) ? score : 0;
+    scored.push({
+      chunkKey: chunk.key,
+      text: chunk.text,
+      score: validScore,
+      metadata: chunk.metadata,
+    });
+  }
 
 /**
  * Compute cosine similarity between two vectors
@@ -19,7 +28,9 @@ export function cosineSimilarity(
     dotProduct += vec1[i] * vec2[i];
   }
 
-  return dotProduct; // Already normalized, so this is the cosine similarity
+  // Ensure we return a valid number, defaulting to 0 if NaN
+  const similarity = dotProduct;
+  return isNaN(similarity) ? 0 : similarity;
 }
 
 /**

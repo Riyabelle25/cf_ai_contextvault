@@ -324,7 +324,7 @@ function addSources(sources) {
         <div class="space-y-1">
             ${sources.map((source, idx) => `
                 <div class="text-xs text-yellow-700">
-                    ${idx + 1}. ${source.fileName} (score: ${source.score.toFixed(3)})
+                    ${idx + 1}. ${source.fileName} (score: ${(source.score || 0).toFixed(3)})
                 </div>
             `).join('')}
         </div>
