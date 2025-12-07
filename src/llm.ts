@@ -64,8 +64,8 @@ export async function queryLLM(
 
   // Call Llama 3.3
   // Note: Using type assertion as the model may not be in type definitions yet
-  const response = await (env.AI as any).run("@cf/meta/llama-3.3-70b-instruct", {
-    prompt,
+  const response = await (env.AI as any).run("@cf/meta/llama-3.1-70b-instruct", {
+    messages: [{ role: "user", content: prompt }],
     max_tokens: 1000,
     temperature: 0.7,
   });
@@ -75,8 +75,15 @@ export async function queryLLM(
   if (typeof response === "string") {
     answer = response;
   } else if (response && typeof response === "object") {
-    // Handle different response formats
-    if ("response" in response) {
+    // Handle chat completion response format
+    if ("choices" in response && response.choices && response.choices.length > 0) {
+      const choice = response.choices[0];
+      if (choice.message && choice.message.content) {
+        answer = choice.message.content;
+      } else {
+        answer = choice.text || "No response generated.";
+      }
+    } else if ("response" in response) {
       answer = (response as any).response;
     } else if ("text" in response) {
       answer = (response as any).text;

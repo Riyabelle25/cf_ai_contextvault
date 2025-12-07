@@ -1,6 +1,6 @@
 # Prompt Used in while developing ContextVault
 
-# **Cursor IDE Prompt — Build “ContextVault” (Cloudflare AI RAG App)**
+# **Cursor IDE Prompt - Build “ContextVault” (Cloudflare AI RAG App)**
 
 **You are an expert full-stack engineer helping me build an AI-powered application on Cloudflare called *ContextVault*.
 Follow Cloudflare’s internship assignment requirements strictly.
@@ -157,7 +157,7 @@ Cursor should generate code that supports:
 * Form for upload
 * Chat box
 * Sidebar listing uploaded files
-* Visual UI not required to be fancy — just functional
+* Visual UI not required to be fancy - just functional
 
 ---
 
